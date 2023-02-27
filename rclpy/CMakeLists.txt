@@ -36,6 +36,7 @@ find_package(rcutils REQUIRED)
 find_package(rmw REQUIRED)
 find_package(rmw_implementation_cmake REQUIRED)
 find_package(rosidl_runtime_c REQUIRED)
+find_package(tracetools REQUIRED)
 
 # Find python before pybind11
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
@@ -115,6 +116,7 @@ target_link_libraries(_rclpy_pybind11 PRIVATE
   rcpputils::rcpputils
   rcutils::rcutils
   rosidl_runtime_c::rosidl_runtime_c
+  tracetools::tracetools
 )
 configure_build_install_location(_rclpy_pybind11)
 

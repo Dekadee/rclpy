@@ -21,6 +21,8 @@
 #include <rosidl_runtime_c/message_type_support_struct.h>
 #include <rmw/types.h>
 
+#include <tracetools/tracetools.h>
+
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -110,6 +112,7 @@ Subscription::take_message(py::object pymsg_type, bool raw)
       }
       throw RCLError("failed to take raw message from subscription");
     }
+    TRACEPOINT(rclcpp_take, static_cast<const void *>(&taken.rcl_msg));
     pytaken_msg = py::bytes(
       reinterpret_cast<const char *>(taken.rcl_msg.buffer),
       taken.rcl_msg.buffer_length);
@@ -128,6 +131,7 @@ Subscription::take_message(py::object pymsg_type, bool raw)
       }
       throw RCLError("failed to take message from subscription");
     }
+    TRACEPOINT(rclcpp_take, static_cast<const void *>(taken_msg.get()));
 
     pytaken_msg = convert_to_py(taken_msg.get(), pymsg_type);
   }
@@ -159,6 +163,20 @@ Subscription::get_topic_name()
 
   return std::string(subscription_name);
 }
+
+void
+Subscription::trace_subscription_callback_added(const uint64_t object_id, char * function_name)
+{
+  TRACEPOINT(rclcpp_subscription_callback_added,
+    static_cast<const void *>(this),
+    reinterpret_cast<const void*>(object_id)
+  );
+  TRACEPOINT(rclcpp_callback_register,
+    reinterpret_cast<const void*>(object_id),
+    function_name
+  );
+}
+
 void
 define_subscription(py::object module)
 {
@@ -177,6 +195,8 @@ define_subscription(py::object module)
     "Get the name of the logger associated with the node of the subscription.")
   .def(
     "get_topic_name", &Subscription::get_topic_name,
-    "Return the resolved topic name of a subscription.");
+    "Return the resolved topic name of a subscription.")
+  .def("trace_subscription_callback_added", &Subscription::trace_subscription_callback_added,
+    "Pass the callback address to the C interface for tracing");
 }
 }  // namespace rclpy

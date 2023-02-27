@@ -1501,7 +1501,7 @@ class Node:
             callback_group = self.default_callback_group
         if clock is None:
             clock = self._clock
-        timer = Timer(callback, callback_group, timer_period_nsec, clock, context=self.context)
+        timer = Timer(callback, callback_group, timer_period_nsec, clock, self.__node.pointer, context=self.context)
 
         callback_group.add_entity(timer)
         self._timers.append(timer)

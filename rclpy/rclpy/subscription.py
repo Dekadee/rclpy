@@ -61,6 +61,7 @@ class Subscription:
         self.msg_type = msg_type
         self.topic = topic
         self.callback = callback
+        self.__subscription.trace_subscription_callback_added(id(callback), callback.__name__)
         self.callback_group = callback_group
         # True when the callback is ready to fire but has not been "taken" by an executor
         self._executor_event = False

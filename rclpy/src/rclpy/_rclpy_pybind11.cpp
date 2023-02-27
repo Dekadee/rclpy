@@ -31,6 +31,7 @@
 #include "duration.hpp"
 #include "clock_event.hpp"
 #include "exceptions.hpp"
+#include "executor_trace.hpp"
 #include "graph.hpp"
 #include "guard_condition.hpp"
 #include "lifecycle.hpp"
@@ -231,6 +232,10 @@ PYBIND11_MODULE(_rclpy_pybind11, m) {
   m.def(
     "rclpy_logging_configure", rclpy::logging_configure,
     "Initialize RCL logging.");
+
+  m.def("trace_callback_start", &rclpy::trace_callback_start, "Trace event for callback start in executors");
+
+  m.def("trace_callback_end", &rclpy::trace_callback_end, "Trace event for callback end in executors");
 
   rclpy::define_logging_api(m);
   rclpy::define_signal_handler_api(m);

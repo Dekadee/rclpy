@@ -99,12 +99,15 @@ class _WorkTracker:
 
 async def await_or_execute(callback: Union[Callable, Coroutine], *args) -> Any:
     """Await a callback if it is a coroutine, else execute it."""
+    _rclpy.trace_callback_start(id(callback))
     if inspect.iscoroutinefunction(callback):
         # Await a coroutine
-        return await callback(*args)
+        res = await callback(*args)
     else:
         # Call a normal function
-        return callback(*args)
+        res = callback(*args)
+    _rclpy.trace_callback_end(id(callback))
+    return res
 
 
 class TimeoutException(Exception):
@@ -685,8 +688,10 @@ class Executor:
                 # Create a new generator
                 self._last_args = args
                 self._last_kwargs = kwargs
+                #TRACEPOINT executor_wait_for_work
                 self._cb_iter = self._wait_for_ready_callbacks(*args, **kwargs)
 
+            #TRACEPOINT get next ready
             try:
                 return next(self._cb_iter)
             except StopIteration:
@@ -708,6 +713,7 @@ class SingleThreadedExecutor(Executor):
         except TimeoutException:
             pass
         else:
+            #TRACEPOINT executor_execute, this won't work
             handler()
             if handler.exception() is not None:
                 raise handler.exception()
@@ -733,7 +739,6 @@ class MultiThreadedExecutor(Executor):
                 num_threads = multiprocessing.cpu_count()
             except NotImplementedError:
                 num_threads = 1
-        self._futures = []
         self._executor = ThreadPoolExecutor(num_threads)
 
     def _spin_once_impl(
@@ -754,11 +759,6 @@ class MultiThreadedExecutor(Executor):
             pass
         else:
             self._executor.submit(handler)
-            self._futures.append(handler)
-            for future in self._futures:  # check for any exceptions
-                if future.done():
-                    self._futures.remove(future)
-                    future.result()
 
     def spin_once(self, timeout_sec: float = None) -> None:
         self._spin_once_impl(timeout_sec)

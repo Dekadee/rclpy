@@ -19,6 +19,8 @@
 #include <rosidl_runtime_c/service_type_support_struct.h>
 #include <rmw/types.h>
 
+#include <tracetools/tracetools.h>
+
 #include <memory>
 #include <string>
 
@@ -145,6 +147,14 @@ Service::get_qos_profile()
 }
 
 void
+Service::trace_service_callback_added(const uint64_t object_id) {
+  TRACEPOINT(rclcpp_service_callback_added,
+    static_cast<const void *>(this),
+    reinterpret_cast<const void*>(object_id)
+  );
+}
+
+void
 define_service(py::object module)
 {
   py::class_<Service, Destroyable, std::shared_ptr<Service>>(module, "Service")
@@ -165,6 +175,8 @@ define_service(py::object module)
     "Send a response")
   .def(
     "service_take_request", &Service::service_take_request,
-    "Take a request from a given service");
+    "Take a request from a given service")
+  .def("trace_service_callback_added", &Service::trace_service_callback_added,
+    "Trace callback being added to service");
 }
 }  // namespace rclpy
