@@ -688,10 +688,13 @@ class Executor:
                 # Create a new generator
                 self._last_args = args
                 self._last_kwargs = kwargs
-                #TRACEPOINT executor_wait_for_work
+                if not kwargs["timeout_sec"]:
+                  _rclpy.trace_executor_wait_for_work(0)
+                else:
+                  _rclpy.trace_executor_wait_for_work(kwargs["timeout_sec"])
                 self._cb_iter = self._wait_for_ready_callbacks(*args, **kwargs)
 
-            #TRACEPOINT get next ready
+            _rclpy.trace_executor_get_next_ready()
             try:
                 return next(self._cb_iter)
             except StopIteration:
@@ -713,7 +716,7 @@ class SingleThreadedExecutor(Executor):
         except TimeoutException:
             pass
         else:
-            #TRACEPOINT executor_execute, this won't work
+            _rclpy.trace_executor_execute(id(entity))
             handler()
             if handler.exception() is not None:
                 raise handler.exception()
@@ -758,6 +761,7 @@ class MultiThreadedExecutor(Executor):
         except ConditionReachedException:
             pass
         else:
+            _rclpy.trace_executor_execute(id(entity))
             self._executor.submit(handler)
 
     def spin_once(self, timeout_sec: float = None) -> None:

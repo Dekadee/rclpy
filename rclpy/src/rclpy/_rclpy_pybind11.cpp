@@ -237,6 +237,12 @@ PYBIND11_MODULE(_rclpy_pybind11, m) {
 
   m.def("trace_callback_end", &rclpy::trace_callback_end, "Trace event for callback end in executors");
 
+  m.def("trace_executor_execute", &rclpy::trace_executor_execute, "Trace event for execution of task in executor");
+
+  m.def("trace_executor_get_next_ready", &rclpy::trace_executor_get_next_ready, "Trace event for executor getting next ready task");
+
+  m.def("trace_executor_wait_for_work", &rclpy::trace_executor_wait_for_work, "Trace event for executor waiting for new tasks");
+
   rclpy::define_logging_api(m);
   rclpy::define_signal_handler_api(m);
   rclpy::define_clock_event(m);

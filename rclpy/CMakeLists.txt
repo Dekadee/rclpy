@@ -84,6 +84,7 @@ pybind11_add_module(_rclpy_pybind11 SHARED
   src/rclpy/duration.cpp
   src/rclpy/clock_event.cpp
   src/rclpy/exceptions.cpp
+  src/rclpy/executor_trace.cpp
   src/rclpy/graph.cpp
   src/rclpy/guard_condition.cpp
   src/rclpy/lifecycle.cpp

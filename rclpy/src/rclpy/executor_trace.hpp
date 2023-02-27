@@ -12,6 +12,12 @@ namespace rclpy
   void trace_callback_start(uint64_t callback_id);
 
   void trace_callback_end(uint64_t callback_id);
+
+  void trace_executor_execute(uint64_t callback_id);
+
+  void trace_executor_get_next_ready();
+
+  void trace_executor_wait_for_work(int64_t);
 }
 
 #endif
