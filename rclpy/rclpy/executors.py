@@ -688,10 +688,10 @@ class Executor:
                 # Create a new generator
                 self._last_args = args
                 self._last_kwargs = kwargs
-                if not kwargs["timeout_sec"]:
+                if "timeout_sec" not in kwargs or kwargs["timeout_sec"] is None:
                   _rclpy.trace_executor_wait_for_work(0)
                 else:
-                  _rclpy.trace_executor_wait_for_work(kwargs["timeout_sec"])
+                  _rclpy.trace_executor_wait_for_work(int(kwargs["timeout_sec"] * 1000))
                 self._cb_iter = self._wait_for_ready_callbacks(*args, **kwargs)
 
             _rclpy.trace_executor_get_next_ready()
