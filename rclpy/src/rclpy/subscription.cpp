@@ -73,6 +73,11 @@ Subscription::Subscription(
 
   *rcl_subscription_ = rcl_get_zero_initialized_subscription();
 
+  TRACEPOINT(rclcpp_subscription_init,
+    static_cast<const void *>(rcl_subscription_.get()),
+    static_cast<const void *>(this)
+  );
+
   rcl_ret_t ret = rcl_subscription_init(
     rcl_subscription_.get(), node_.rcl_ptr(), msg_type,
     topic.c_str(), &subscription_ops);

@@ -103,7 +103,7 @@ public:
   destroy() override;
 
   void
-  trace_service_callback_added(const uint64_t object_id);
+  trace_service_callback_added(const uint64_t object_id, char * function_name);
 
 private:
   Node node_;
