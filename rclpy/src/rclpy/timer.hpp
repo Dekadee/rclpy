@@ -47,7 +47,7 @@ public:
    * \param[in] period_nsec the period of the timer in nanoseconds
    * \return a timer capsule
    */
-  Timer(Clock & clock, Context & context, int64_t period_nsec);
+  Timer(Clock & clock, Context & context, int64_t period_nsec, uint64_t callback_id_);
 
   ~Timer() = default;
 
@@ -133,9 +133,16 @@ public:
   /// Force an early destruction of this object
   void destroy() override;
 
+  void trace_timer_callback_added(uint64_t callback_id);
+
+  void trace_timer_callback_register(uint64_t callback_id, char * callback_name);
+
+  void trace_timer_link_node(uint64_t node_id);
+
 private:
   Context context_;
   Clock clock_;
+  uint64_t callback_id_;
   std::shared_ptr<rcl_timer_t> rcl_timer_;
 };
 

@@ -24,6 +24,7 @@ find_package(rcpputils REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(rmw REQUIRED)
 find_package(rmw_implementation_cmake REQUIRED)
+find_package(tracetools REQUIRED)
 
 # Find python before pybind11
 find_package(python_cmake_module REQUIRED)
@@ -160,6 +161,7 @@ pybind11_add_module(_rclpy_pybind11 SHARED
   src/rclpy/context.cpp
   src/rclpy/destroyable.cpp
   src/rclpy/duration.cpp
+  src/rclpy/executor_trace.cpp
   src/rclpy/graph.cpp
   src/rclpy/guard_condition.cpp
   src/rclpy/handle.cpp
@@ -188,6 +190,7 @@ target_link_libraries(_rclpy_pybind11 PRIVATE
   rclpy_common
   rcpputils::rcpputils
   rcutils::rcutils
+  tracetools::tracetools
 )
 configure_build_install_location(_rclpy_pybind11)
 clean_windows_flags(_rclpy_pybind11)

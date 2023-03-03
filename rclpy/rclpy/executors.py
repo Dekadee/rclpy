@@ -99,12 +99,15 @@ class _WorkTracker:
 
 async def await_or_execute(callback: Union[Callable, Coroutine], *args) -> Any:
     """Await a callback if it is a coroutine, else execute it."""
+    _rclpy.trace_callback_start(id(callback))
     if inspect.iscoroutinefunction(callback):
         # Await a coroutine
-        return await callback(*args)
+        res = await callback(*args)
     else:
         # Call a normal function
-        return callback(*args)
+        res = callback(*args)
+    _rclpy.trace_callback_end(id(callback))
+    return res
 
 
 class TimeoutException(Exception):

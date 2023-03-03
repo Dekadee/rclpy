@@ -17,6 +17,8 @@
 
 #include <rcl/error_handling.h>
 
+#include <tracetools/tracetools.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -131,6 +133,19 @@ Service::service_take_request(py::object pyrequest_type)
 
   return result_tuple;
 }
+
+void
+Service::trace_service_callback_added(const uint64_t object_id, char * function_name) {
+  TRACEPOINT(rclcpp_service_callback_added,
+    static_cast<const void *>(rcl_service_.get()),
+    reinterpret_cast<const void*>(object_id)
+  );
+  TRACEPOINT(rclcpp_callback_register,
+    reinterpret_cast<const void*>(object_id),
+    function_name
+  );
+}
+
 void
 define_service(py::object module)
 {
@@ -146,6 +161,8 @@ define_service(py::object module)
     "Send a response")
   .def(
     "service_take_request", &Service::service_take_request,
-    "Take a request from a given service");
+    "Take a request from a given service")
+  .def("trace_service_callback_added", &Service::trace_service_callback_added,
+    "Trace callback being added to service");
 }
 }  // namespace rclpy

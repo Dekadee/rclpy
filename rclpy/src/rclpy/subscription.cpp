@@ -19,6 +19,8 @@
 #include <rcl/rcl.h>
 #include <rcl/types.h>
 
+#include <tracetools/tracetools.h>
+
 #include <memory>
 #include <string>
 
@@ -69,6 +71,11 @@ Subscription::Subscription(
     });
 
   *rcl_subscription_ = rcl_get_zero_initialized_subscription();
+
+  TRACEPOINT(rclcpp_subscription_init,
+    static_cast<const void *>(rcl_subscription_.get()),
+    static_cast<const void *>(this)
+  );
 
   rcl_ret_t ret = rcl_subscription_init(
     rcl_subscription_.get(), node_.rcl_ptr(), msg_type,
@@ -158,6 +165,20 @@ Subscription::get_topic_name()
 
   return std::string(subscription_name);
 }
+
+void
+Subscription::trace_subscription_callback_added(const uint64_t object_id, char * function_name)
+{
+  TRACEPOINT(rclcpp_subscription_callback_added,
+    static_cast<const void *>(this),
+    reinterpret_cast<const void*>(object_id)
+  );
+  TRACEPOINT(rclcpp_callback_register,
+    reinterpret_cast<const void*>(object_id),
+    function_name
+  );
+}
+
 void
 define_subscription(py::object module)
 {
@@ -176,6 +197,8 @@ define_subscription(py::object module)
     "Get the name of the logger associated with the node of the subscription.")
   .def(
     "get_topic_name", &Subscription::get_topic_name,
-    "Return the resolved topic name of a subscription.");
+    "Return the resolved topic name of a subscription.")
+  .def("trace_subscription_callback_added", &Subscription::trace_subscription_callback_added,
+    "Pass the callback address to the C interface for tracing");
 }
 }  // namespace rclpy

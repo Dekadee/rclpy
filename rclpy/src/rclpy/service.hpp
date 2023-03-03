@@ -93,6 +93,9 @@ public:
   void
   destroy() override;
 
+  void
+  trace_service_callback_added(const uint64_t object_id, char * function_name);
+
 private:
   Node node_;
   std::shared_ptr<rcl_service_t> rcl_service_;

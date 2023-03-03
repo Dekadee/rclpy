@@ -25,6 +25,7 @@
 #include "context.hpp"
 #include "destroyable.hpp"
 #include "duration.hpp"
+#include "executor_trace.hpp"
 #include "graph.hpp"
 #include "guard_condition.hpp"
 #include "handle_api.hpp"
@@ -225,6 +226,10 @@ PYBIND11_MODULE(_rclpy_pybind11, m) {
   m.def(
     "rclpy_logging_configure", rclpy::logging_configure,
     "Initialize RCL logging.");
+
+  m.def("trace_callback_start", &rclpy::trace_callback_start, "Trace event for callback start in executors");
+
+  m.def("trace_callback_end", &rclpy::trace_callback_end, "Trace event for callback end in executors");
 
   rclpy::define_pycapsule_api(m);
   rclpy::define_handle_api(m);

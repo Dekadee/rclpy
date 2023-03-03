@@ -21,6 +21,8 @@
 #include <rcl/timer.h>
 #include <rcl/types.h>
 
+#include <tracetools/tracetools.h>
+
 #include <memory>
 #include <stdexcept>
 
@@ -43,7 +45,7 @@ Timer::destroy()
 
 Timer::Timer(
   Clock & clock, Context & context, int64_t period_nsec)
-: context_(context), clock_(clock)
+: context_(context), clock_(clock), callback_id_(callback_id_)
 {
   // Create a client
   rcl_timer_ = std::shared_ptr<rcl_timer_t>(
@@ -159,11 +161,33 @@ bool Timer::is_timer_canceled()
   return is_canceled;
 }
 
+void Timer::trace_timer_callback_added(const uint64_t callback_id) {
+  TRACEPOINT(rclcpp_timer_callback_added,
+    static_cast<const void *>(rcl_timer_.get()),
+    reinterpret_cast<const void *>(callback_id)
+  );
+
+}
+
+void Timer::trace_timer_callback_register(const uint64_t callback_id, char * callback_name) {
+  TRACEPOINT(rclcpp_callback_register,
+    reinterpret_cast<const void *>(callback_id),
+    callback_name
+  );
+}
+
+void Timer::trace_timer_link_node(const uint64_t node_id) {
+  TRACEPOINT(rclcpp_timer_link_node,
+    static_cast<const void *>(rcl_timer_.get()),
+    reinterpret_cast<const void *>(node_id)
+  );
+}
+
 void
 define_timer(py::object module)
 {
   py::class_<Timer, Destroyable, std::shared_ptr<Timer>>(module, "Timer")
-  .def(py::init<Clock &, Context &, int64_t>())
+  .def(py::init<Clock &, Context &, int64_t, uint64_t>())
   .def_property_readonly(
     "pointer", [](const Timer & timer) {
       return reinterpret_cast<size_t>(timer.rcl_ptr());
@@ -193,7 +217,16 @@ define_timer(py::object module)
     "Cancel a timer.")
   .def(
     "is_timer_canceled", &Timer::is_timer_canceled,
-    "Check if a timer is canceled.");
+    "Check if a timer is canceled.")
+  .def(
+    "trace_timer_callback_added", &Timer::trace_timer_callback_added,
+    "Trace callback being added to timer.")
+  .def(
+    "trace_timer_callback_register", &Timer::trace_timer_callback_register,
+    "Trace callback being registered to timer.")
+  .def(
+    "trace_timer_link_node", &Timer::trace_timer_link_node,
+    "Trace timer creation to link with creating node");
 }
 
 }  // namespace rclpy

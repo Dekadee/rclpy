@@ -97,6 +97,9 @@ public:
   void
   destroy() override;
 
+  void
+  trace_subscription_callback_added(const uint64_t object_id, char * function_name);
+
 private:
   Node node_;
   std::shared_ptr<rcl_subscription_t> rcl_subscription_;
