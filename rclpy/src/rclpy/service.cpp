@@ -149,7 +149,7 @@ Service::get_qos_profile()
 void
 Service::trace_service_callback_added(const uint64_t object_id, char * function_name) {
   TRACEPOINT(rclcpp_service_callback_added,
-    static_cast<const void *>(this),
+    static_cast<const void *>(rcl_service_.get()),
     reinterpret_cast<const void*>(object_id)
   );
   TRACEPOINT(rclcpp_callback_register,
