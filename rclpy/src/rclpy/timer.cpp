@@ -44,7 +44,7 @@ Timer::destroy()
 }
 
 Timer::Timer(
-  Clock & clock, Context & context, int64_t period_nsec)
+  Clock & clock, Context & context, int64_t period_nsec, uint64_t callback_id_)
 : context_(context), clock_(clock), callback_id_(callback_id_)
 {
   // Create a client
