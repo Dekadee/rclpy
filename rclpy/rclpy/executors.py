@@ -716,7 +716,12 @@ class SingleThreadedExecutor(Executor):
         except TimeoutException:
             pass
         else:
-            _rclpy.trace_executor_execute(id(entity))
+            if isinstance(entity, Subscription):
+                entity : Subscription
+                _rclpy.trace_executor_execute(entity.handle.pointer)
+            if isinstance(entity, Timer):
+                entity : Timer
+                _rclpy.trace_executor_execute(entity.handle.pointer)
             handler()
             if handler.exception() is not None:
                 raise handler.exception()

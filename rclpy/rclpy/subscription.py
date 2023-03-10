@@ -64,7 +64,7 @@ class Subscription:
         try:
             self.__subscription.trace_subscription_callback_added(id(callback), callback.__name__)
         except AttributeError:
-            self.__subscription.trace_subscription_callback_added(id(callback), "Unnamed function")
+            self.__subscription.trace_subscription_callback_added(id(callback), type(callback).__name__)
         self.callback_group = callback_group
         # True when the callback is ready to fire but has not been "taken" by an executor
         self._executor_event = False

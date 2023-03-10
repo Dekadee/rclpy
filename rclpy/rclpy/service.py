@@ -55,9 +55,9 @@ class Service:
         self.srv_name = srv_name
         self.callback = callback
         try:
-            self.__service.trace_service_callback_added(id(callback), callback.__name__)
+            self.__service.trace_service_callback_added(id(callback), callback.__qualname__)
         except AttributeError:
-            self.__service.trace_service_callback_added(id(callback), "Unnamed function")
+            self.__service.trace_service_callback_added(id(callback), type(callback).__name__)
         self.callback_group = callback_group
         # True when the callback is ready to fire but has not been "taken" by an executor
         self._executor_event = False
