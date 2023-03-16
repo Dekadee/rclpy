@@ -158,22 +158,15 @@ bool Timer::is_timer_canceled()
   return is_canceled;
 }
 
-void Timer::trace_timer_callback_added(const uint64_t callback_id) {
+void Timer::trace_timer_create(uint64_t callback_id, char * callback_name, uint64_t node_id) {
   TRACEPOINT(rclcpp_timer_callback_added,
     static_cast<const void *>(rcl_timer_.get()),
     reinterpret_cast<const void *>(callback_id)
   );
-
-}
-
-void Timer::trace_timer_callback_register(const uint64_t callback_id, char * callback_name) {
   TRACEPOINT(rclcpp_callback_register,
     reinterpret_cast<const void *>(callback_id),
     callback_name
   );
-}
-
-void Timer::trace_timer_link_node(const uint64_t node_id) {
   TRACEPOINT(rclcpp_timer_link_node,
     static_cast<const void *>(rcl_timer_.get()),
     reinterpret_cast<const void *>(node_id)
@@ -216,14 +209,8 @@ define_timer(py::object module)
     "is_timer_canceled", &Timer::is_timer_canceled,
     "Check if a timer is canceled.")
   .def(
-    "trace_timer_callback_added", &Timer::trace_timer_callback_added,
-    "Trace callback being added to timer.")
-  .def(
-    "trace_timer_callback_register", &Timer::trace_timer_callback_register,
-    "Trace callback being registered to timer.")
-  .def(
-    "trace_timer_link_node", &Timer::trace_timer_link_node,
-    "Trace timer creation to link with creating node");
+    "trace_timer_create", &Timer::trace_timer_create,
+    "Trace timer being created.");
 }
 
 }  // namespace rclpy

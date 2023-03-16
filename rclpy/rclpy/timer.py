@@ -21,7 +21,7 @@ from rclpy.utilities import get_default_context
 
 class Timer:
 
-    def __init__(self, callback, callback_group, timer_period_ns, clock, node, *, context=None):
+    def __init__(self, callback, callback_group, timer_period_ns, clock, node=None, *, context=None):
         self._context = get_default_context() if context is None else context
         self._clock = clock
         with self._clock.handle, self._context.handle:
@@ -29,9 +29,18 @@ class Timer:
                 self._clock.handle, self._context.handle, timer_period_ns, id(callback))
         self.timer_period_ns = timer_period_ns
         self.callback = callback
-        self.__timer.trace_timer_link_node(node)
-        self.__timer.trace_timer_callback_added(id(callback))
-        self.__timer.trace_timer_callback_register(id(callback), callback.__name__)
+        try:
+            self.__timer.trace_timer_create(
+                id(callback),
+                callback.__name__,
+                node if node is not None else 0
+            )
+        except AttributeError:
+            self.__timer.trace_timer_create(
+                id(callback),
+                type(callback).__name__,
+                node if node is not None else 0
+            )
         self.callback_group = callback_group
         # True when the callback is ready to fire but has not been "taken" by an executor
         self._executor_event = False

@@ -135,11 +135,7 @@ public:
   /// Force an early destruction of this object
   void destroy() override;
 
-  void trace_timer_callback_added(uint64_t callback_id);
-
-  void trace_timer_callback_register(uint64_t callback_id, char * callback_name);
-
-  void trace_timer_link_node(uint64_t node_id);
+  void trace_timer_create(uint64_t callback_id, char * callback_name, uint64_t node_id);
 
 private:
   Context context_;
