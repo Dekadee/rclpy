@@ -32,7 +32,7 @@ class Timer:
         try:
             self.__timer.trace_timer_create(
                 id(callback),
-                callback.__name__,
+                callback.__qualname__,
                 node if node is not None else 0
             )
         except AttributeError:

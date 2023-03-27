@@ -62,7 +62,7 @@ class Subscription:
         self.topic = topic
         self.callback = callback
         try:
-            self.__subscription.trace_subscription_callback_added(id(callback), callback.__name__)
+            self.__subscription.trace_subscription_callback_added(id(callback), callback.__qualname__)
         except AttributeError:
             self.__subscription.trace_subscription_callback_added(id(callback), type(callback).__name__)
         self.callback_group = callback_group
