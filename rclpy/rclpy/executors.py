@@ -134,6 +134,21 @@ class ConditionReachedException(Exception):
     pass
 
 
+class TimeoutObject:
+    """Use timeout object to save timeout."""
+
+    def __init__(self, timeout: float):
+        self._timeout = timeout
+
+    @property
+    def timeout(self):
+        return self._timeout
+
+    @timeout.setter
+    def timeout(self, timeout):
+        self._timeout = timeout
+
+
 class Executor:
     """
     The base class for an executor.
@@ -292,7 +307,7 @@ class Executor:
         else:
             start = time.monotonic()
             end = start + timeout_sec
-            timeout_left = timeout_sec
+            timeout_left = TimeoutObject(timeout_sec)
 
             while self._context.ok() and not future.done() and not self._is_shutdown:
                 self.spin_once_until_future_complete(future, timeout_left)
@@ -301,7 +316,7 @@ class Executor:
                 if now >= end:
                     return
 
-                timeout_left = end - now
+                timeout_left.timeout = end - now
 
     def spin_once(self, timeout_sec: float = None) -> None:
         """
@@ -314,7 +329,11 @@ class Executor:
         """
         raise NotImplementedError()
 
-    def spin_once_until_future_complete(self, future: Future, timeout_sec: float = None) -> None:
+    def spin_once_until_future_complete(
+        self,
+        future: Future,
+        timeout_sec: Optional[Union[float, TimeoutObject]] = None
+    ) -> None:
         """
         Wait for and execute a single callback.
 
@@ -442,7 +461,7 @@ class Executor:
 
     def _wait_for_ready_callbacks(
         self,
-        timeout_sec: float = None,
+        timeout_sec: Optional[Union[float, TimeoutObject]] = None,
         nodes: List['Node'] = None,
         condition: Callable[[], bool] = lambda: False,
     ) -> Generator[Tuple[Task, WaitableEntityType, 'Node'], None, None]:
@@ -459,7 +478,8 @@ class Executor:
             to True.
         """
         timeout_timer = None
-        timeout_nsec = timeout_sec_to_nsec(timeout_sec)
+        timeout_nsec = timeout_sec_to_nsec(
+            timeout_sec.timeout if isinstance(timeout_sec, TimeoutObject) else timeout_sec)
         if timeout_nsec > 0:
             timeout_timer = Timer(None, None, timeout_nsec, self._clock, context=self._context)
 
@@ -708,7 +728,10 @@ class SingleThreadedExecutor(Executor):
     def __init__(self, *, context: Context = None) -> None:
         super().__init__(context=context)
 
-    def spin_once(self, timeout_sec: float = None) -> None:
+    def _spin_once_impl(
+        self,
+        timeout_sec: Optional[Union[float, TimeoutObject]] = None
+    ) -> None:
         try:
             handler, entity, node = self.wait_for_ready_callbacks(timeout_sec=timeout_sec)
         except ShutdownException:
@@ -726,8 +749,15 @@ class SingleThreadedExecutor(Executor):
             if handler.exception() is not None:
                 raise handler.exception()
 
-    def spin_once_until_future_complete(self, future: Future, timeout_sec: float = None) -> None:
-        self.spin_once(timeout_sec)
+    def spin_once(self, timeout_sec: float = None) -> None:
+        self._spin_once_impl(timeout_sec)
+
+    def spin_once_until_future_complete(
+        self,
+        future: Future,
+        timeout_sec: Optional[Union[float, TimeoutObject]] = None
+    ) -> None:
+        self._spin_once_impl(timeout_sec)
 
 
 class MultiThreadedExecutor(Executor):
@@ -751,7 +781,7 @@ class MultiThreadedExecutor(Executor):
 
     def _spin_once_impl(
         self,
-        timeout_sec: float = None,
+        timeout_sec: Optional[Union[float, TimeoutObject]] = None,
         wait_condition: Callable[[], bool] = lambda: False
     ) -> None:
         try:
@@ -772,5 +802,9 @@ class MultiThreadedExecutor(Executor):
     def spin_once(self, timeout_sec: float = None) -> None:
         self._spin_once_impl(timeout_sec)
 
-    def spin_once_until_future_complete(self, future: Future, timeout_sec: float = None) -> None:
+    def spin_once_until_future_complete(
+        self,
+        future: Future,
+        timeout_sec: Optional[Union[float, TimeoutObject]] = None
+    ) -> None:
         self._spin_once_impl(timeout_sec, future.done)
